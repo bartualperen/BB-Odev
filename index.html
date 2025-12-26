@@ -1,51 +1,176 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <title>Cloud Snake Game</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ISE 465 — Cloud Snake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        canvas { border: 2px solid white; background-color: #000; display: block; margin: 0 auto; }
-        body { background-color: #222; color: white; text-align: center; font-family: Arial; }
+        :root{
+            --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8; --danger:#ef4444;
+            --glass: rgba(255,255,255,0.04);
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial; background:linear-gradient(180deg,#071422 0%, #071226 60%); color:#e6eef6; display:flex; align-items:center; justify-content:center}
+        .container{width:min(980px,94%); display:grid; grid-template-columns:1fr 360px; gap:28px; align-items:start}
+        .card{background:var(--card); padding:20px; border-radius:12px; box-shadow:0 8px 30px rgba(2,6,23,0.6);}
+        header h1{margin:0; font-size:20px; font-weight:700}
+        p.lead{color:var(--muted); margin:8px 0 18px}
+        .game-area{display:flex; align-items:center; justify-content:center; padding:18px; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-radius:8px}
+        canvas{background:#000; border-radius:8px; image-rendering:pixelated; box-shadow: 0 6px 18px rgba(2,6,23,0.7)}
+        .sidebar{display:flex; flex-direction:column; gap:12px}
+        .score{display:flex; justify-content:space-between; align-items:center}
+        .badge{background:var(--glass); padding:8px 12px; border-radius:999px; color:var(--accent); font-weight:700}
+        .controls{display:flex; gap:8px}
+        button{background:var(--accent); color:#042028; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-weight:600}
+        button.secondary{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.04)}
+        .hint{color:var(--muted); font-size:13px}
+        @media (max-width:900px){.container{grid-template-columns:1fr;}.sidebar{order:2}}
     </style>
 </head>
 <body>
-    <h1>ISE 465 Cloud Snake Game</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="container">
+        <div class="card">
+            <header>
+                <h1>ISE 465 — Cloud Snake Game</h1>
+                <p class="lead">Basit, responsive ve modern görünümlü Snake örneği. Ok tuşları veya touchscreen ile oynayın.</p>
+            </header>
+
+            <div class="game-area">
+                <canvas id="gameCanvas" width="400" height="400" aria-label="Snake game canvas"></canvas>
+            </div>
+        </div>
+
+        <aside class="sidebar">
+            <div class="card">
+                <div class="score">
+                    <div>
+                        <div style="font-size:13px;color:var(--muted)">Skor</div>
+                        <div class="badge" id="score">0</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-size:13px;color:var(--muted)">Durum</div>
+                        <div id="status" style="color:var(--muted); font-weight:600">Hazır</div>
+                    </div>
+                </div>
+
+                <div style="height:12px"></div>
+                <div class="controls">
+                    <button id="startBtn">Başlat</button>
+                    <button id="pauseBtn" class="secondary">Duraklat</button>
+                    <button id="resetBtn" class="secondary">Yeniden</button>
+                </div>
+
+                <div style="height:12px"></div>
+                <div class="hint">Dokunmatik cihazlarda kaydırma ile oynayın. Masaüstünde ok tuşları.</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size:13px;color:var(--muted); margin-bottom:8px">Kontroller</div>
+                <ul style="margin:0 0 0 16px; color:var(--muted)">
+                    <li>Ok Tuşları / Swipe</li>
+                    <li>Oyun bittiğinde "Yeniden" veya "Başlat"</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        let snake = [{x: 200, y: 200}];
-        let food = {x: 0, y: 0};
-        let dx = 20; let dy = 0;
-        function main() {
-            if (didGameEnd()) return alert("Oyun Bitti!");
-            setTimeout(function() {
-                clearCanvas(); drawFood(); advanceSnake(); drawSnake(); main();
-            }, 100);
-        }
-        function clearCanvas() { ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-        function drawSnake() { ctx.fillStyle = "lime"; snake.forEach(part => ctx.fillRect(part.x, part.y, 18, 18)); }
-        function advanceSnake() {
-            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-            snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) createFood();
-            else snake.pop();
-        }
-        function didGameEnd() {
-            for (let i = 4; i < snake.length; i++) if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
-            return snake[0].x < 0 || snake[0].x > canvas.width - 20 || snake[0].y < 0 || snake[0].y > canvas.height - 20;
-        }
-        function createFood() {
-            food.x = Math.floor(Math.random() * 20) * 20;
-            food.y = Math.floor(Math.random() * 20) * 20;
-        }
-        function drawFood() { ctx.fillStyle = "red"; ctx.fillRect(food.x, food.y, 18, 18); }
-        document.addEventListener("keydown", e => {
-            if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -20; }
-            if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = 20; }
-            if (e.key === "ArrowLeft" && dx === 0) { dx = -20; dy = 0; }
-            if (e.key === "ArrowRight" && dx === 0) { dx = 20; dy = 0; }
-        });
-        createFood(); main();
+        (function(){
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('score');
+            const statusEl = document.getElementById('status');
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            const CELL = 20; const COLS = 20; const ROWS = 20; const FPS = 10;
+            let snake = []; let food = null; let velocity = {x:1,y:0}; let running = false; let lastFrameTime = 0; let accumulated = 0; let score = 0;
+
+            function resizeCanvasForDPR(){
+                const dpr = Math.max(window.devicePixelRatio || 1, 1);
+                const size = Math.min(420, Math.max(320, Math.min(window.innerWidth-40, 420)));
+                canvas.style.width = size + 'px';
+                canvas.style.height = size + 'px';
+                canvas.width = size * dpr;
+                canvas.height = size * dpr;
+                ctx.setTransform(dpr * (canvas.width/size)/ (canvas.width/ (COLS*CELL)),0,0,dpr * (canvas.height/size)/ (canvas.height/ (ROWS*CELL)),0,0);
+            }
+
+            function init(){
+                snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+                velocity = {x:1,y:0};
+                createFood();
+                score = 0; updateScore();
+                statusEl.textContent = 'Hazır';
+                running = false; lastFrameTime = 0; accumulated = 0;
+            }
+
+            function updateScore(){ scoreEl.textContent = String(score); }
+
+            function createFood(){
+                while(true){
+                    const candidate = {x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS)};
+                    if(!snake.some(p => p.x===candidate.x && p.y===candidate.y)){ food = candidate; break; }
+                }
+            }
+
+            function step(){
+                const head = {x: snake[0].x + velocity.x, y: snake[0].y + velocity.y};
+                if(head.x<0 || head.x>=COLS || head.y<0 || head.y>=ROWS || snake.some((s,i)=>i>0 && s.x===head.x && s.y===head.y)){
+                    running = false; statusEl.textContent = 'Oyun Bitti'; return;
+                }
+                snake.unshift(head);
+                if(head.x===food.x && head.y===food.y){ score+=10; updateScore(); createFood(); }
+                else snake.pop();
+            }
+
+            function loop(timestamp){
+                if(!lastFrameTime) lastFrameTime = timestamp; const delta = timestamp - lastFrameTime; lastFrameTime = timestamp;
+                accumulated += delta;
+                const interval = 1000 / FPS;
+                while(accumulated >= interval){ if(running) step(); accumulated -= interval; }
+                render();
+                if(running) requestAnimationFrame(loop);
+            }
+
+            function render(){
+                ctx.fillStyle = '#041018'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                const scaleX = canvas.width / (COLS*CELL); const scaleY = canvas.height / (ROWS*CELL);
+                ctx.save(); ctx.scale(scaleX, scaleY);
+                ctx.fillStyle = '#052027'; ctx.fillRect(0,0,COLS*CELL,ROWS*CELL);
+                ctx.fillStyle = '#ef4444'; drawCell(food.x, food.y);
+                ctx.fillStyle = '#06b6d4'; snake.forEach((p,i)=>{ if(i===0) ctx.fillStyle='#34d399'; else ctx.fillStyle='#06b6d4'; drawCell(p.x,p.y); });
+                ctx.restore();
+            }
+
+            function drawCell(col,row){ ctx.fillRect(col*CELL + 1, row*CELL + 1, CELL-2, CELL-2); }
+
+            function changeDirection(nx, ny){ if(nx === -velocity.x && ny === -velocity.y) return; velocity = {x:nx,y:ny}; }
+
+            window.addEventListener('keydown', e=>{
+                if(e.key === 'ArrowUp') changeDirection(0,-1);
+                if(e.key === 'ArrowDown') changeDirection(0,1);
+                if(e.key === 'ArrowLeft') changeDirection(-1,0);
+                if(e.key === 'ArrowRight') changeDirection(1,0);
+                if(e.key === ' '){ if(!running){ running=true; statusEl.textContent='Oynanıyor'; requestAnimationFrame(loop);} else { running=false; statusEl.textContent='Duraklatıldı'; }}
+            });
+
+            startBtn.addEventListener('click', ()=>{ if(!running){ running=true; statusEl.textContent='Oynanıyor'; lastFrameTime=0; requestAnimationFrame(loop); } });
+            pauseBtn.addEventListener('click', ()=>{ running = !running; statusEl.textContent = running? 'Oynanıyor' : 'Duraklatıldı'; if(running) { lastFrameTime = 0; requestAnimationFrame(loop); } });
+            resetBtn.addEventListener('click', ()=>{ init(); render(); });
+
+            let touchStart = null; const SWIPE_THRESHOLD = 30;
+            canvas.addEventListener('touchstart', e=>{ touchStart = e.touches[0]; });
+            canvas.addEventListener('touchmove', e=>{ if(!touchStart) return; const t = e.touches[0]; const dx = t.clientX - touchStart.clientX; const dy = t.clientY - touchStart.clientY; if(Math.abs(dx) > SWIPE_THRESHOLD || Math.abs(dy) > SWIPE_THRESHOLD){ if(Math.abs(dx) > Math.abs(dy)){ if(dx>0) changeDirection(1,0); else changeDirection(-1,0); } else { if(dy>0) changeDirection(0,1); else changeDirection(0,-1); } touchStart = null; } });
+
+            window.addEventListener('resize', ()=>{ resizeCanvasForDPR(); render(); });
+            resizeCanvasForDPR(); init(); render();
+        })();
     </script>
 </body>
 </html>
