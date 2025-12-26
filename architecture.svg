@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240" viewBox="0 0 600 240">
+  <style>
+    .box { fill:#f3f4f6; stroke:#111827; stroke-width:2; rx:8; }
+    .label { font-family: Arial, sans-serif; font-size:14px; fill:#111827; }
+    .arrow { stroke:#0f172a; stroke-width:2; fill:none; marker-end:url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <!-- Browser -->
+  <rect x="20" y="70" width="160" height="80" class="box" />
+  <text x="100" y="110" class="label" text-anchor="middle">Tarayıcı (Browser)</text>
+
+  <!-- Internet cloud -->
+  <g>
+    <ellipse cx="300" cy="110" rx="80" ry="50" fill="#e6edf3" stroke="#0f172a" stroke-width="1.5" />
+    <text x="300" y="110" class="label" text-anchor="middle">İnternet</text>
+  </g>
+
+  <!-- EC2 -->
+  <rect x="420" y="50" width="160" height="120" class="box" />
+  <text x="500" y="85" class="label" text-anchor="middle">AWS EC2</text>
+  <text x="500" y="105" class="label" text-anchor="middle">(Ubuntu 24.04)</text>
+  <text x="500" y="125" class="label" text-anchor="middle">Nginx → /var/www/html</text>
+
+  <!-- Arrows -->
+  <path d="M180,110 C220,110 250,110 260,110" class="arrow" />
+  <path d="M340,110 C360,110 390,110 420,110" class="arrow" />
+
+</svg>
