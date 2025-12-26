@@ -1,69 +1,96 @@
-# ISE 465 - Bulut Tabanlı Snake Game Dağıtımı
+# ISE 465 - Bulut Bilişim Dersi 2. Ödev Raporu
 
-## Mimari Şema
+## 1. Özet
 
-![Mimari Şema](architecture.svg)
+Bu çalışma tek dosyadan oluşan HTML5/JavaScript tabanlı bir Snake oyununun AWS EC2 (Ubuntu 24.04) üzerinde Nginx ile dağıtımını içermektedir. Amaç, bulut üzerinde basit bir web uygulamasının dağıtımı, güvenlik yapılandırması ve otomasyon adımlarının belgelenmesidir.
 
-Basitçe: Kullanıcı tarayıcısından internete, internetten AWS EC2 (Ubuntu 24.04) üzerinde çalışan Nginx'e bağlanır ve Nginx `index.html` dosyasını sunar.
+## 2. Uygulama Seçimi
 
-## Kullanılan Teknolojiler
+Seçilen uygulama: Tek dosyalık HTML ve JavaScript ile yazılmış Snake (Yılan) oyunu (`index.html`). Minimal bağımlılık gerektirdiği için dağıtım ve değerlendirme için uygundur.
 
-- AWS EC2
-- Ubuntu 24.04
-- Nginx
-- HTML5
-- JavaScript
+## 3. Bulut Platformu
 
-## Teknik Detaylar (Rapor İçin)
+Platform: AWS (Amazon Web Services)
 
-- **Security Group (Güvenlik Grubu) Ayarları:** EC2 panelinde HTTP için TCP/80 portunu dış dünyaya açtım (kaynak 0.0.0.0/0). Bunu yapmasaydım, tarayıcıya EC2 IP adresini yazdığınızda oyun yüklenmezdi çünkü gelen HTTP trafiği bloke edilmiş olurdu. Benzer şekilde SSH erişimi için TCP/22 portunu yalnızca gerekli adreslere veya test ortamı için genişçe açtım; üretimde IP kısıtlaması tavsiye edilir.
+- Servis: EC2 (Ubuntu 24.04)
+- Web sunucusu: Nginx
 
-- **SSH Bağlantı İzinleri:** İndirdiğim `.pem` anahtar dosyasına sunucudan erişmeden önce yerel makinada izinleri `chmod 400 mykey.pem` ile kısıtladım. Sunucuya bağlanmak için kullandığım örnek komut:
+## 4. Uygulama Mimari Şeması
+
+Kullanıcı -> İnternet -> AWS Security Group (Port 80 açık) -> EC2 (Nginx) -> `index.html`
+
+Detaylı şema dosyası: [architecture.svg](architecture.svg)
+
+## 5. Adım Adım Kurulum Notları
+
+1. EC2 Instance oluşturma
+	- Ubuntu 24.04 AMI seçildi.
+	- Uygun instance tipi seçildi (test için t2.micro / t3.micro önerilir).
+	- Bir anahtar çifti (key pair) oluşturuldu ve `.pem` dosyası indirildi.
+
+2. Security Group yapılandırması
+	- TCP/80 (HTTP) kuralı: Kaynak 0.0.0.0/0 (dış dünyadan erişim). Bu izin verilmeden tarayıcıdan EC2 IP'sine erişim sağlanamaz.
+	- TCP/22 (SSH) kuralı: Yönetim için gerekli. Üretimde yalnızca belirli IP'lere izin verilmesi tavsiye edilir.
+
+3. Sunucuya SSH ile bağlanma
 
 ```bash
+chmod 400 mykey.pem
 ssh -i mykey.pem ubuntu@<EC2_PUBLIC_IP>
 ```
 
-Bu izinlerin doğru olmaması durumunda SSH istemcisi bağlantıyı reddeder.
-
-- **Statik IP / Elastic IP:** Eğer EC2 instance'ı kapatıp başlattığınızda genel IP (public IP) değişiyorsa, bu bir zorluktur — özellikle rapor/ödev bağlantıları için. Bunu çözmek için EC2'ye bir Elastic IP atamak gerekir; Elastic IP atanmamışsa IP değişimini "iyileştirme önerisi" olarak rapora ekleyin.
-
-## Rapor İçeriği (Sunulacak Başlıklar)
-
-**Uygulama Mimari Şeması:** Kullanıcı -> İnternet -> AWS Security Group -> EC2 (Nginx + Snake App) akışını gösteren basit bir şema (bkz. `architecture.svg`).
-
-**Adım Adım Uygulama Notları:**
-
-- GitHub reposunun oluşturulması: Bu repo oluşturuldu ve kaynak kod (`index.html` vb.) eklendi.
-- AWS EC2 Instance ayağa kaldırılması: Ubuntu 24.04 AMI seçildi, instance tipi ve anahtar çifti belirlendi.
-- Güvenlik ayarlarının yapılması: Security Group üzerinde TCP/22 (SSH) ve TCP/80 (HTTP) izinleri tanımlandı. (Prod için 22'yi kısıtlamanızı öneririm.)
-- `git clone` ve `deploy.sh` ile kurulum: Sunucuya bağlandıktan sonra repoyu klonlayıp `deploy.sh` çalıştırarak Nginx kurulumu ve dosya yerleştirmesini otomatikleştirdim.
-
-Örnek kurulum adımları (EC2 üzerinde):
+4. Depoyu çekme ve otomasyon
 
 ```bash
-# sunucuya bağlandıktan sonra
 git clone https://github.com/<kullanici>/<repo>.git
 cd <repo>
 sudo bash deploy.sh
 ```
 
-## Otomasyon Kodları
+`deploy.sh` betiği sistem güncellemelerini yapar, Nginx'i kurar, servisi başlatır ve repo kökündeki `index.html` dosyasını `/var/www/html/index.html` olarak kopyalar.
 
-Otomasyon olarak yazdığım `deploy.sh` scripti, Nginx kurulumunu, servis başlatmayı ve repo kökündeki `index.html` dosyasını `/var/www/html/index.html` olarak kopyalamayı içerir. Otomasyon ödev gereksinimi nedeniyle bu script raporda ayrı bir başlık altında vurgulanmalıdır.
+## 6. Otomasyon (`deploy.sh`)
 
-## Öğrenilen Dersler
+Bu ödevde otomasyon zorunludur. `deploy.sh` aşağıdaki işlevleri otomatikleştirir:
 
-- **Güvenlik Gruplarının Önemi:** Bulut ortamında trafiği kontrol eden ilk katman Security Group'lardır; yanlış yapılandırma erişimi kapatır veya gereksiz yere açar.
-- **SSH Anahtar Güvenliği:** `.pem` dosyasına doğru dosya izinleri verilmezse bağlantı sağlanamaz; anahtarların güvenli saklanması kritik.
-- **Maliyet Yönetimi:** Oluşturulan EC2, Elastic IP vb. kaynaklar kullanılmadığında kapatılmalı veya silinmelidir; aksi takdirde maliyet devam eder.
-- **Statik IP Gerekliliği:** Sunucu IP'sinin değişmesi kullanıcı deneyimini etkiler; uzun süreli erişim için Elastic IP kullanımı önerilir.
+- Paket listelerini güncelleme ve temel paketlerin kurulumu (`apt update && apt upgrade`).
+- Nginx kurulumu ve servisin başlatılması.
+- Repo kökündeki `index.html` dosyasının Nginx'in sunacağı dizine kopyalanması.
 
-## Kısa Notlar / İpuçları
+Örnek (kısmi) içerik:
 
-- `deploy.sh` çalıştırılmadan önce Security Group üzerinde HTTP (80) portunun açık olduğundan emin olun.
-- Bu repo içindeki önemli dosyalar: `index.html`, `deploy.sh`, `README.md`.
+```bash
+#!/bin/bash
+set -e
+sudo apt update
+sudo apt -y upgrade
+sudo apt -y install nginx
+sudo systemctl enable --now nginx
+sudo cp index.html /var/www/html/index.html
+```
+
+## 7. Karşılaşılan Zorluklar ve Çözümler
+
+- Port 80 erişimi kapalıydı: AWS Security Group üzerinde TCP/80 açılarak sorun çözüldü.
+- SSH izinleri hatası: `.pem` dosyasının izinleri uygun değildi; `chmod 400` uygulandı ve bağlantı sağlandı.
+- Dinamik Public IP: EC2 restart sonrası IP değişimi yaşandı; bu durum rapor/erişim hedefleri için Elastic IP kullanılarak çözülebilir.
+
+## 8. Güvenlik Notları
+
+- Security Group'lar gelen trafiği kontrol eder; gereksiz açık port bırakmayın.
+- SSH anahtarlarını güvenle saklayın, `.pem` dosyasına sadece gerekli izinleri verin (`chmod 400`).
+- Üretim ortamında SSH erişimini sadece yönetici IP'leriyle sınırlandırın.
+
+## 9. Öğrenilen Dersler
+
+- Bulut altyapısında ilk savunma hattı Security Group'lardır; doğru yapılandırma erişim sağlar veya engeller.
+- Otomasyon (deploy.sh) dağıtımı tekrarlanabilir ve hızlı yapar; manuel adım sayısını azaltır.
+- Kaynak yönetimi ve maliyet takibi önemlidir — kullanılmayan EC2/Elastic IP kaynakları maliyete yol açar.
+
+## 10. Sunum Videosu
+
+Sunum ve demo videosu: [YouTube Linki Buraya]
 
 ---
 
-Eğer isterseniz, bu README içeriği için uygun bir mimari görsel (PNG/SVG) oluşturarak `architecture.svg` yerine güncelleme yapabilirim veya `deploy.sh` içeriğini README'e yerleştirebilirim.
+Bu raporu daha akademik bir formatta (başlıklarda numaralandırma, özet, sonuç vb.) genişletebilirim veya `architecture.svg` görselini oluşturup repo'ya ekleyebilirim. Ayrıca isterseniz `deploy.sh` dosyasının tam içeriğini README içinde gösterebilirim.
