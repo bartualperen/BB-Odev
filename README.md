@@ -1,96 +1,116 @@
-# ISE 465 - Bulut Bilişim Dersi 2. Ödev Raporu
+ISE 465 - Bulut Bilişim Dersi 2. Ödev Raporu
+1. Özet ve Amaç
 
-## 1. Özet
+Bu proje, ISE 465 Bulut Bilişim dersi kapsamında, bulut bilişim kavramlarını uygulamalı olarak anlamak amacıyla geliştirilmiştir. Çalışma; tek dosyadan oluşan bir web uygulamasının (Snake Game) modern bulut sağlayıcı platformları kullanılarak yayına alınması, güvenliğinin yapılandırılması ve dağıtım sürecinin otomatize edilmesini kapsamaktadır.
 
-Bu çalışma tek dosyadan oluşan HTML5/JavaScript tabanlı bir Snake oyununun AWS EC2 (Ubuntu 24.04) üzerinde Nginx ile dağıtımını içermektedir. Amaç, bulut üzerinde basit bir web uygulamasının dağıtımı, güvenlik yapılandırması ve otomasyon adımlarının belgelenmesidir.
+2. Proje Açıklaması ve Hedefleri
 
-## 2. Uygulama Seçimi
+Projenin temel hedefleri şunlardır:
 
-Seçilen uygulama: Tek dosyalık HTML ve JavaScript ile yazılmış Snake (Yılan) oyunu (`index.html`). Minimal bağımlılık gerektirdiği için dağıtım ve değerlendirme için uygundur.
+	Erişilebilirlik: Yerel ortamda geliştirilen bir uygulamanın genel internet trafiğine açılması.
 
-## 3. Bulut Platformu
+Otomasyon: Manuel kurulum hatalarını en aza indirmek için dağıtım süreçlerinin scriptler aracılığıyla yürütülmesi.
 
-Platform: AWS (Amazon Web Services)
+Güvenlik: Bulut ortamında port yönetimi ve erişim kontrollerinin (Security Groups) yapılandırılması.
 
-- Servis: EC2 (Ubuntu 24.04)
-- Web sunucusu: Nginx
+Maliyet Yönetimi: Ücretsiz plan (Free Tier) kaynaklarını kullanarak verimli bir mimari oluşturmak.
 
-## 4. Uygulama Mimari Şeması
+3. Uygulama Seçimi
 
-Kullanıcı -> İnternet -> AWS Security Group (Port 80 açık) -> EC2 (Nginx) -> `index.html`
+Dağıtım için HTML5 ve JavaScript tabanlı, tek dosyadan oluşan bir Snake (Yılan) Oyunu seçilmiştir.
 
-Detaylı şema dosyası: [architecture.svg](architecture.svg)
+	Neden: Minimal bağımlılık gerektirmesi sayesinde bulut platformundaki web sunucusu (Nginx) konfigürasyonuna ve dağıtım adımlarına odaklanmayı kolaylaştırmaktadır.
 
-## 5. Adım Adım Kurulum Notları
+4. Kullanılan Teknolojiler ve Bulut Platformu
 
-1. EC2 Instance oluşturma
-	- Ubuntu 24.04 AMI seçildi.
-	- Uygun instance tipi seçildi (test için t2.micro / t3.micro önerilir).
-	- Bir anahtar çifti (key pair) oluşturuldu ve `.pem` dosyası indirildi.
+Ödev gereksinimleri doğrultusunda aşağıdaki teknolojiler tercih edilmiştir:
 
-2. Security Group yapılandırması
-	- TCP/80 (HTTP) kuralı: Kaynak 0.0.0.0/0 (dış dünyadan erişim). Bu izin verilmeden tarayıcıdan EC2 IP'sine erişim sağlanamaz.
-	- TCP/22 (SSH) kuralı: Yönetim için gerekli. Üretimde yalnızca belirli IP'lere izin verilmesi tavsiye edilir.
+	Bulut Sağlayıcı: Amazon Web Services (AWS).
 
-3. Sunucuya SSH ile bağlanma
+Servis: AWS EC2 (Elastic Compute Cloud).
 
-```bash
-chmod 400 mykey.pem
-ssh -i mykey.pem ubuntu@<EC2_PUBLIC_IP>
-```
+İşletim Sistemi: Ubuntu 24.04 LTS.
 
-4. Depoyu çekme ve otomasyon
+	Web Sunucusu: Nginx.
 
-```bash
-git clone https://github.com/<kullanici>/<repo>.git
-cd <repo>
+	Versiyon Kontrol: Git & GitHub.
+
+5. Uygulama Mimari Şeması
+
+Uygulamanın bulut üzerindeki çalışma mantığı aşağıdaki gibidir:
+
+Kullanıcı (Tarayıcı) --> İnternet --> AWS Security Group (Port 80) --> EC2 Instance (Nginx) --> index.html
+6. Adım Adım Kurulum ve Dağıtım Notları
+
+Uygulamanın yerel ortamdan buluta taşınma süreci şu adımlarla gerçekleştirilmiştir:
+
+6.1. AWS EC2 Yapılandırması
+
+	AWS Konsolu üzerinden bir EC2 instance başlatıldı (Free Tier uyumlu t2.micro).
+
+	Güvenlik için bir .pem anahtar çifti oluşturuldu.
+
+6.2. Security Group (Güvenlik Grubu) Ayarları
+
+Uygulamanın erişilebilir olması için aşağıdaki kurallar tanımlanmıştır:
+
+	HTTP (Port 80): 0.0.0.0/0 (Her yerden gelen web trafiğine izin verildi).
+
+	SSH (Port 22): Yönetimsel erişim için aktif edildi.
+
+6.3. Uygulamanın Dağıtımı
+
+Sunucuya SSH ile bağlanıldı ve terminal üzerinden işlemler tamamlandı:
+
+Bash
+
+chmod 400 key.pem
+ssh -i "key.pem" ubuntu@13.61.187.227
+git clone https://github.com/bartualperen/BB-Odev.git
+cd BB-Odev
 sudo bash deploy.sh
-```
 
-`deploy.sh` betiği sistem güncellemelerini yapar, Nginx'i kurar, servisi başlatır ve repo kökündeki `index.html` dosyasını `/var/www/html/index.html` olarak kopyalar.
+7. Otomasyon (deploy.sh)
 
-## 6. Otomasyon (`deploy.sh`)
+Dağıtım sürecini otomatize etmek için kullanılan script içeriği aşağıdadır:
 
-Bu ödevde otomasyon zorunludur. `deploy.sh` aşağıdaki işlevleri otomatikleştirir:
+Bash
 
-- Paket listelerini güncelleme ve temel paketlerin kurulumu (`apt update && apt upgrade`).
-- Nginx kurulumu ve servisin başlatılması.
-- Repo kökündeki `index.html` dosyasının Nginx'in sunacağı dizine kopyalanması.
-
-Örnek (kısmi) içerik:
-
-```bash
 #!/bin/bash
-set -e
-sudo apt update
-sudo apt -y upgrade
-sudo apt -y install nginx
-sudo systemctl enable --now nginx
+# Paket listelerini güncelle
+sudo apt update -y
+# Nginx kurulumu
+sudo apt install nginx -y
+# Nginx servisini başlat ve boot sırasında çalışması için ayarla
+sudo systemctl start nginx
+sudo systemctl enable nginx
+# Uygulama dosyasını Nginx dizinine kopyala
 sudo cp index.html /var/www/html/index.html
-```
 
-## 7. Karşılaşılan Zorluklar ve Çözümler
+8. Karşılaşılan Zorluklar ve Çözümler
 
-- Port 80 erişimi kapalıydı: AWS Security Group üzerinde TCP/80 açılarak sorun çözüldü.
-- SSH izinleri hatası: `.pem` dosyasının izinleri uygun değildi; `chmod 400` uygulandı ve bağlantı sağlandı.
-- Dinamik Public IP: EC2 restart sonrası IP değişimi yaşandı; bu durum rapor/erişim hedefleri için Elastic IP kullanılarak çözülebilir.
+	Erişim Sorunu: Başlangıçta HTTP portu kapalı olduğu için IP üzerinden erişim sağlanamadı; AWS Security Group ayarları güncellenerek çözüldü.
 
-## 8. Güvenlik Notları
+	İzin Hataları: Dosya kopyalama sırasında permission denied hatası alındı; sudo yetkileri script içerisine dahil edilerek çözüldü.
 
-- Security Group'lar gelen trafiği kontrol eder; gereksiz açık port bırakmayın.
-- SSH anahtarlarını güvenle saklayın, `.pem` dosyasına sadece gerekli izinleri verin (`chmod 400`).
-- Üretim ortamında SSH erişimini sadece yönetici IP'leriyle sınırlandırın.
+9. Öğrenilen Dersler ve Olası İyileştirmeler
 
-## 9. Öğrenilen Dersler
+Öğrenilen Dersler:
 
-- Bulut altyapısında ilk savunma hattı Security Group'lardır; doğru yapılandırma erişim sağlar veya engeller.
-- Otomasyon (deploy.sh) dağıtımı tekrarlanabilir ve hızlı yapar; manuel adım sayısını azaltır.
-- Kaynak yönetimi ve maliyet takibi önemlidir — kullanılmayan EC2/Elastic IP kaynakları maliyete yol açar.
+	Bulut altyapısında güvenlik gruplarının (firewall) yanlış yapılandırılmasının uygulamanın erişilebilirliğini doğrudan engellediği görüldü.
 
-## 10. Sunum Videosu
+	deploy.sh gibi otomasyon araçlarının, sunucu kurulum süresini kısalttığı ve hata payını düşürdüğü deneyimlendi.
 
-Sunum ve demo videosu: [YouTube Linki Buraya]
+Olası İyileştirmeler:
 
----
+	SSL/TLS: Veri güvenliği için Certbot kullanılarak HTTPS protokolüne geçilebilir.
 
-Bu raporu daha akademik bir formatta (başlıklarda numaralandırma, özet, sonuç vb.) genişletebilirim veya `architecture.svg` görselini oluşturup repo'ya ekleyebilirim. Ayrıca isterseniz `deploy.sh` dosyasının tam içeriğini README içinde gösterebilirim.
+	CI/CD: GitHub Actions entegrasyonu ile kod her güncellendiğinde sunucuya otomatik dağıtım yapılabilir.
+
+	Elastic IP: Sunucu her yeniden başladığında IP değişimini önlemek için sabit bir IP atanabilir.
+
+10. Sunum Videosu
+
+Ödevin anlatımını ve çalışan demonun gösterimini içeren video bağlantısı:
+
+	YouTube Linki: [Linkinizi Buraya Yapıştırın]
