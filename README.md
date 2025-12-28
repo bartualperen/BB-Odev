@@ -1,7 +1,7 @@
-ISE 465 - Bulut Bilişim Dersi 2. Ödev Raporu
+Bulut Bilişim Dersi 2. Ödev Raporu
 1. Özet ve Amaç
 
-Bu proje, ISE 465 Bulut Bilişim dersi kapsamında, bulut bilişim kavramlarını uygulamalı olarak anlamak amacıyla geliştirilmiştir. Çalışma; tek dosyadan oluşan bir web uygulamasının (Snake Game) modern bulut sağlayıcı platformları kullanılarak yayına alınması, güvenliğinin yapılandırılması ve dağıtım sürecinin otomatize edilmesini kapsamaktadır.
+Bu proje, Bulut Bilişim dersi kapsamında, bulut bilişim kavramlarını uygulamalı olarak anlamak amacıyla geliştirilmiştir. Çalışma; tek dosyadan oluşan bir web uygulamasının (Snake Game) modern bulut sağlayıcı platformları kullanılarak yayına alınması, güvenliğinin yapılandırılması ve dağıtım sürecinin otomatize edilmesini kapsamaktadır.
 
 2. Proje Açıklaması ve Hedefleri
 
@@ -113,4 +113,4 @@ Olası İyileştirmeler:
 
 Ödevin anlatımını ve çalışan demonun gösterimini içeren video bağlantısı:
 
-	YouTube Linki: [Linkinizi Buraya Yapıştırın]
+	YouTube Linki: 
