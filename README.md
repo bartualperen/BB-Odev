@@ -113,4 +113,4 @@ Olası İyileştirmeler:
 
 Ödevin anlatımını ve çalışan demonun gösterimini içeren video bağlantısı:
 
-	YouTube Linki: 
+	YouTube Linki: https://youtu.be/sSae37cQu20
